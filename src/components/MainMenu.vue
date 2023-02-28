@@ -58,13 +58,13 @@
       </li>
       <template v-if="firstMeasureWithoutZone !== null">
         <li class="divider" data-content="Options"></li>
-        <li class="menu-item" @click="toggleExistingMusicMode">
-          <button class="btn btn-action btn-sm" title="Toggle Existing Music Mode">
+        <li class="menu-item" @click="toggleAddZoneToMeasureMode">
+          <button class="btn btn-action btn-sm" title="Toggle Measure List">
             <font-awesome-icon icon="fa-solid fa-vector-square"/>
           </button>
           <span style="margin-left: .3rem;">
-            <template v-if="existingMusicMode">Merge Mode On</template>
-            <template v-else>Merge Mode Off</template>
+            <template v-if="mode === 'addZoneToMeasure'">Switch to new bars</template>
+            <template v-else>Switch to zones only</template>
           </span>
         </li>
       </template>
@@ -73,6 +73,8 @@
 </template>
 
 <script>
+import { mode as allowedModes } from '@/store/constants.js'
+
 export default {
   name: 'MainMenu',
   props: {
@@ -94,8 +96,8 @@ export default {
     firstMeasureWithoutZone: function () {
       return this.$store.getters.firstMeasureWithoutZone
     },
-    existingMusicMode: function () {
-      return this.$store.getters.existingMusicMode
+    mode: function () {
+      return this.$store.getters.mode
     }
   },
   methods: {
@@ -118,9 +120,13 @@ export default {
     showPagesModal () {
       this.$store.dispatch('togglePagesModal')
     },
-    toggleExistingMusicMode: function () {
-      if (this.firstMeasureWithoutZone !== null) {
-        this.$store.dispatch('toggleExistingMusicMode')
+    toggleAddZoneToMeasureMode: function () {
+      if (this.firstMeasureWithoutZone !== null && this.mode !== allowedModes.addZoneToMeasure) {
+        this.$store.dispatch('setMode', allowedModes.addZoneToMeasure)
+      } else if (this.mode === allowedModes.addZoneToMeasure) {
+        this.$store.dispatch('setMode', allowedModes.selection)
+      } else {
+        // console.log('skipping this time, mode is ' + this.mode)
       }
     }
   }
