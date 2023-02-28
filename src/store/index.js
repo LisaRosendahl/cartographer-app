@@ -24,6 +24,7 @@ export default createStore({
     loading: false,
     processing: false,
     mode: allowedModes.selection,
+    existingMusicMode: false,
     selectedZoneId: null,
     hoveredZoneId: null,
     currentMdivId: null,
@@ -95,14 +96,13 @@ export default createStore({
     },
     CREATE_ZONE_FROM_ANNOTORIOUS (state, annot) {
       const xmlDoc = state.xmlDoc.cloneNode(true)
-      console.log('create ', annot)
+      // console.log('create ', annot)
       const index = state.currentPage + 1
       const surface = xmlDoc.querySelector('surface:nth-child(' + index + ')')
 
       const zone = annotorious2meiZone(annot)
       surface.appendChild(zone)
 
-<<<<<<< Updated upstream
       if (state.existingMusicMode) {
         // standard mode -> add zone to first measure without zone
         if (state.mode === allowedModes.manualRect) {
@@ -131,22 +131,6 @@ export default createStore({
         // add zone to last existing measure in file
         } else if (state.mode === allowedModes.additionalZone && state.selectedZoneId === null) {
           addZoneToLastMeasure(xmlDoc, zone.getAttribute('xml:id'))
-=======
-      // standard mode -> create new measure for zone
-      if (state.mode === allowedModes.manualRect) {
-        const measure = generateMeasure()
-        measure.setAttribute('facs', '#' + zone.getAttribute('xml:id'))
-        insertMeasure(xmlDoc, measure, state, zone, state.currentPage)
-
-      // add zone to last existing measure in file
-      } else if (state.mode === allowedModes.additionalZone && state.selectedZoneId === null) {
-        addZoneToLastMeasure(xmlDoc, zone.getAttribute('xml:id'))
-      } else if (state.mode === allowedModes.addZoneToMeasure) {
-        const lastMeasureWithoutZone = xmlDoc.querySelector('music measure:not([facs])')
-        if (lastMeasureWithoutZone !== null) {
-          state.currentMdivId = lastMeasureWithoutZone.closest('mdiv').getAttribute('xml:id')
-          lastMeasureWithoutZone.setAttribute('facs', '#' + zone.getAttribute('xml:id'))
->>>>>>> Stashed changes
         }
       }
 
@@ -161,7 +145,7 @@ export default createStore({
       rects.forEach(rect => {
         const zone = measureDetector2meiZone(rect)
         surface.appendChild(zone)
-        if (state.mode !== allowedModes.addZoneToMeasure) {
+        if (!state.existingMusicMode) {
           const measure = generateMeasure()
           measure.setAttribute('facs', '#' + zone.getAttribute('xml:id'))
           insertMeasure(xmlDoc, measure, state, zone, pageIndex)
@@ -196,6 +180,9 @@ export default createStore({
       if (mode in allowedModes) {
         state.mode = mode
       }
+    },
+    TOGGLE_EXISTING_MUSIC_MODE (state) {
+      state.existingMusicMode = !state.existingMusicMode
     },
     SET_CURRENT_MEASURE_ID (state, id) {
       if (id === null) {
@@ -500,6 +487,9 @@ export default createStore({
     setMode ({ commit }, mode) {
       commit('SET_MODE', mode)
     },
+    toggleExistingMusicMode ({ commit }) {
+      commit('TOGGLE_EXISTING_MUSIC_MODE')
+    },
     setCurrentMeasureLabel ({ commit }, val) {
       commit('SET_CURRENT_MEASURE_LABEL', val)
     },
@@ -754,6 +744,9 @@ export default createStore({
         return true
       })
       return bool
+    },
+    existingMusicMode: state => {
+      return state.existingMusicMode
     },
     firstMeasureWithoutZone: state => {
       if (state.xmlDoc === null) {
