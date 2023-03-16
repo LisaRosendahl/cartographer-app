@@ -65,26 +65,37 @@ export default {
         })
 
         overlay.appendChild(label)
+        overlay.addEventListener('mouseout', (e) => {
+         console.log('mouseout')
+          this.$store.dispatch('unhoverZone', zoneId)
+          e.preventDefault()
+          e.stopPropagation()
+        })
+        overlay.addEventListener('mouseenter', (e) => {
+          console.log('mousenter')
+          this.$store.dispatch('hoverZone', zoneId)
+          e.preventDefault()
+          e.stopPropagation()
+        })
+        overlay.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          overlay.click();
+
+        })
         overlay.addEventListener('click', (e) => {
+          console.log('clicked')
           this.$store.dispatch('clickZone', zoneId)
           e.preventDefault()
           e.stopPropagation()
         })
         overlay.addEventListener('dblclick', (e) => {
+          console.log('dblclicked')
           this.$store.dispatch('selectZone', zoneId)
           e.preventDefault()
           e.stopPropagation()
+
         })
-        overlay.addEventListener('mouseenter', (e) => {
-          this.$store.dispatch('hoverZone', zoneId)
-          e.preventDefault()
-          e.stopPropagation()
-        })
-        overlay.addEventListener('mouseout', (e) => {
-          this.$store.dispatch('unhoverZone', zoneId)
-          e.preventDefault()
-          e.stopPropagation()
-        })
+
 
         this.viewer.addOverlay({
           element: overlay,
@@ -110,7 +121,7 @@ export default {
       showFullPageControl: false,
       showSequenceControl: false,
       gestureSettingsMouse: {
-        clickToZoom: false
+        clickToZoom: false,
       },
       silenceMultiImageWarnings: true
       // navigatorId: 'someId',
@@ -124,11 +135,12 @@ export default {
 
     const annotoriousConfig = {
       disableEditor: true,
-      readOnly: this.mode !== 'manualRect'
     }
 
     // Initialize the Annotorious plugin
     this.anno = Annotorious(this.viewer, annotoriousConfig)
+    this.anno.setDrawingEnabled(true)
+
 
     // Load annotations in W3C WebAnnotation format
     // anno.loadAnnotations('annotations.w3c.json');
@@ -137,6 +149,8 @@ export default {
     const shiftKeyDown = (e) => {
       if (e.keyCode === 16) {
         annoLayer.classList.add('activeSelection')
+        console.log("anno layer " + annoLayer)
+
       }
     }
     const shiftKeyUp = (e) => {
